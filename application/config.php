@@ -76,7 +76,6 @@ return [
     'action_suffix'          => '',
     // 自动搜索控制器
     'controller_auto_search' => false,
-    'URL_MODEL' => '3',
 
     // +----------------------------------------------------------------------
     // | URL设置
@@ -107,7 +106,7 @@ return [
     // 域名根，如thinkphp.cn
     'url_domain_root'        => '',
     // 是否自动转换URL中的控制器和操作名
-    'url_convert'            => true,
+    'url_convert'            => false,
     // 默认的访问控制器层
     'url_controller_layer'   => 'controller',
     // 表单请求类型伪装变量
@@ -254,4 +253,23 @@ return [
         'TOKEN_TYPE' => 'md5', //令牌哈希验证规则 默认为MD5
         'TOKEN_RESET' => true, //令牌验证出错后是否重置令牌 默认为true
     ],
+
+    // +----------------------------------------------------------------------
+    // | 科技云配置参数设置
+    // +----------------------------------------------------------------------
+    'kjy' => [
+        'OAUTH_CLIENT_ID'=> '92658',
+        //ClientSecret ,OAuth参数中的App Secret
+        'OAUTH_CLIENT_SECRET'=> 'i4lCecACOc1fkM3dbsgscPzH2xml0qJo',
+        //回调地址,OAuth参数中的回调地址,必须与申请时候的回调地址一致
+        'OAUTH_REDIRECT_URI'=> 'http://159.226.186.90/asset/index/escienceAuthLogin',
+        'OAUTH_INDEX_URI'=> 'http://159.226.186.90/asset',
+        //下列参数为固定值,根据服务器地址或者协议调整https://passporttest.escience.cn
+        //http://passporttest.escience.cn/oauth2/authorize
+        'OAUTH_ACCESS_TOKEN_URL'=> 'https://passport.escience.cn/oauth2/token',
+        'OAUTH_AUTHORIZE_URL'=> 'https://passport.escience.cn/oauth2/authorize',
+        'OAUTH_THEME'=> 'full',
+        'OAUTH_LOGOUT_URL'=> 'https://passport.escience.cn/logout?WebServerURL=',
+    ],
+
 ];

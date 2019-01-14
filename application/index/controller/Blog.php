@@ -16,8 +16,9 @@ class Blog extends Controller
     {
         //
         //echo "blog index!";
-        $list = Blogs::all();
-        return json($list);
+        //$list = Blogs::all();
+        //return json($list);
+        return 'Blog';
     }
 
     /**

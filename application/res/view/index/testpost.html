@@ -12,7 +12,6 @@ function getData(){
   var col3 =  $("#col3").val();
   var col4 =  $("#col4").val();
   var col5 =  $("#col5").val();
-  var col6 =  $("#col6").val();
   var tb = $("#tb").val();
   //var col5 = "token";
   //var val5 = $("#token").val();
@@ -21,14 +20,12 @@ function getData(){
   var val3 =  $("#val3").val();
   var val4 =  $("#val4").val();
   var val5 =  $("#val5").val();
-  var val6 =  $("#val6").val();
   var obj = {};
   obj[col1] = val1;
   obj[col2] = val2;
   obj[col3] = val3;
   obj[col4] = val4;
   obj[col5] = val5;
-  obj[col6] = val6;
 
   //obj["token"]=
 
@@ -65,9 +62,6 @@ function getData(){
 	</div>
 	<div>
 		<input type="text" name="col5" id="col5">:<input type="text" name="val5" id="val5">
-	</div>
-	<div>
-		<input type="text" name="col6" id="col6">:<input type="text" name="val6" id="val6">
 	</div>
 	<div>
 		<input type="button" value="post" onclick="getData();" />

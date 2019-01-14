@@ -4,26 +4,17 @@ use think\Controller;
 use think\Db;
 use think\Request;
 use think\Validate;
-use ewm\phpqrcode;
+
 
 
 class Index extends Controller
 {
     public function index()
     {
-        // lg("call res /index/index;".date("Y-m-d H:i:s"));
-        // return sel('select * from t_Assets');
-        // return "HI:)))--->>>   welcom res!";
-        return $this->fetch();
+        lg("call res /index/index;".date("Y-m-d H:i:s"));
+        return sel('select * from t_Assets');
+        return "HI:)))--->>>   welcom res!";
     }
-    public function showimg()
-    {
-        // lg("call res /index/index;".date("Y-m-d H:i:s"));
-        // return sel('select * from t_Assets');
-        // return "HI:)))--->>>   welcom res!";
-        return $this->fetch();
-    }
-
     
 
     // 固定资产精确查询
@@ -31,7 +22,6 @@ class Index extends Controller
     // 返回结果：{"data":[{"asset_id":5,"parent_tag_num":"14-16101JC","parent_name":"He-3制冷机","asset_num":"12-13084","tag_num":"3.20101E+12","name":"机械泵","value":4800,"financial_category":"固定资产-通用设备","category_bid":null,"category_sid":null,"category":null,"maker_name":null,"model_num":"RVP-4","person_id":null,"person":"杨天中","deparment_id":null,"deparment":"N08组","topic":null,"start_time":"2018-11-01 13:29:04","location":"*","status":null,"in_use_flag":null,"tag":"0","CreateDate":"0000-00-00 00:00:00","tag_bind_id":1,"tag_id":"111","pic1":"1","pic2":"1","pic3":"1","pic4":"1","video":"1","bind_date":"2018-11-02 20:30:55","bind_person":"1","bind_status":null}],"count":2}
     public function getasset(){
         $re = input('post.');
-
         if(isset($re['page'])){
             $page = $re['page'] ;
         }else{
@@ -42,12 +32,12 @@ class Index extends Controller
         }else{
             $pagesize = 10;
         }
-        $data = gettablecols('t_assets',$re);        
+        $data = gettablecols('t_assets',$re);
         foreach ($data as $key => $value) {
             if($value==''){
                 unset($data[$key]);
             }
-        }        
+        }
         //$data = gettablecols('t_assets',$re);
         $map2 = [];
         if(isset($re['minvalue'])){
@@ -70,304 +60,7 @@ class Index extends Controller
                 $map2['start_time'] = ["<=",$re['maxDate']];
             }
         }
-
-
-
-        $rt = getDataToJson('assets',$data,'*','asset_id',$page,$pagesize,$map2);
-        return $rt;  
-    }
-
-
-    public function getassetcommon(){
-        $re = input('post.');
-        if(isset($re['token'])){
-            $token = $re['token'] ;
-        }else{
-            return 'token 必须提供';
-        }
-        if(isset($re['page'])){
-            $page = $re['page'] ;
-        }else{
-            $page = 0;
-        }
-        if(isset($re['pagesize'])){
-            $pagesize = $re['pagesize'] ;
-        }else{
-            $pagesize = 10;
-        }
-        $data = gettablecols('t_assets',$re);        
-        foreach ($data as $key => $value) {
-            if($value==''){
-                unset($data[$key]);
-            }
-        }        
-        //$data = gettablecols('t_assets',$re);
-        $map2 = [];
-        if(isset($re['minvalue'])){
-            if($re['minvalue']!=''){
-                $data['value'] =['>=',$re['minvalue']];
-            }
-        }
-        if(isset($re['maxvalue'])){
-            if($re['maxvalue']!=''){
-                $map2['value'] = ['<=',$re['maxvalue']];
-            }
-        }
-        if(isset($re['minDate'])){
-            if($re['minDate']!=''){
-                $data['start_time'] = [">=",$re['minDate']];
-            }
-        }
-        if(isset($re['maxDate'])){
-            if($re['maxDate']!=''){
-                $map2['start_time'] = ["<=",$re['maxDate']];
-            }
-        }
-
-
-        $loginstatus = islogin($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-
-        $userid = $loginstatus['msg'];
-        $deparment = getOrgToUserID($userid);
-        $data['deparment_id'] = $deparment[0]['OrgID'];
-        $keystr = '';
-        if(isset($re['keystr'])){
-            $keystr  = $re['keystr'];
-        }
-
-        $rt = getDataToJson('assets',$data,'*','asset_id',$page,$pagesize,$map2,$keystr);
-        return $rt;  
-    }
-
-    public function getassetforassetid(){
-        $re = input('post.');
-        $id = '';
-        if(isset($re['id'])){
-            $id = $re['id'] ;
-        }else{
-            return;
-        }
-        return gettable('t_assets',['asset_num'=>$id],'*');
-        //$rt = getDataToJson('assets',$data,'*','asset_id',$page,$pagesize,$map2);
-        //return $rt;  
-    }
-
-    public function gtas($id){
-        //$id = input("get.id");
-        $ds = gettableDS('t_assets',['asset_num'=>$id],'`name` 设备名称 ,model_num 规格型号 ,`value` 设备原值 ,`tag_num` 标签号 ,rkd_num 入库单号 ,deparment 资产部门,jsr_name 经手人 ,zrr_name 责任人 ,start_time 启用日期,scgj 生产国家,scsjbxxx 生产商 ,jxsjbxxx 经销商'); 
-        // $ar = array();
-        // foreach ($ds as $key => $value) {
-        //     $ar[] =  $value;
-        // }
-        $this->assign('list',$ds);
-        //p($ds);
-        return $this->fetch();
-
-          //   $str = '<table><tbody>';
-          // foreach($ds as $key => $vo){        
-          //   foreach ($vo as $k => $v) {
-          //     $str .=  "<tr><td>".$k."</td><td>".$v."</td></tr>";
-          //   }     
-          // }   
-          // $str .= '</tbody></table>';
-          // return $str;
-
-
-    }
-
-
-    public function getassetImgCountInfo(){
-        $re = input('post.');
-        if(isset($re['page'])){
-            $page = $re['page'] ;
-        }else{
-            $page = 0;
-        }
-        if(isset($re['pagesize'])){
-            $pagesize = $re['pagesize'] ;
-        }else{
-            $pagesize = 10;
-        }
-        $data = gettablecols('t_assets',$re);        
-        foreach ($data as $key => $value) {
-            if($value==''){
-                unset($data[$key]);
-            }
-        }        
-        //$data = gettablecols('t_assets',$re);
-        $map2 = [];
-        if(isset($re['minvalue'])){
-            if($re['minvalue']!=''){
-                $data['value'] =['>=',$re['minvalue']];
-            }
-        }
-        if(isset($re['maxvalue'])){
-            if($re['maxvalue']!=''){
-                $map2['value'] = ['<=',$re['maxvalue']];
-            }
-        }
-        if(isset($re['minDate'])){
-            if($re['minDate']!=''){
-                $data['start_time'] = [">=",$re['minDate']];
-            }
-        }
-        if(isset($re['maxDate'])){
-            if($re['maxDate']!=''){
-                $map2['start_time'] = ["<=",$re['maxDate']];
-            }
-        }
-
-        if(isset($re['uDate'])){
-            if($re['uDate']!=''){
-                $map2['UpdateDate'] = [">",$re['uDate']];
-            }
-        }
-
-        $rt = getDataMapsToJson('assetsimgcount',$data,'*','asset_id',$page,$pagesize,$map2);
-        return $rt;  
-    }
-
-
-    public function getassetfordev(){
-        $re = input('post.');
-        $rule =   [
-            'token'   =>  'require',
-        ];
-        $message  =   [
-            'token.require' => '身份令牌必须提供',
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogindelphi($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-
-        $userid = $loginstatus['msg'];
-        $deparment = getOrgToUserID($userid);
-        $dp = "";
-        if(isset($deparment[0]['OrgName'])){
-            $dp = $deparment[0]['OrgName'];
-        }
-
-        if(isset($re['page'])){
-            $page = $re['page'] ;
-        }else{
-            $page = 0;
-        }
-        if(isset($re['pagesize'])){
-            $pagesize = $re['pagesize'] ;
-        }else{
-            $pagesize = 10;
-        }
-        $data = gettablecols('t_assets',$re);        
-        foreach ($data as $key => $value) {
-            if($value==''){
-                unset($data[$key]);
-            }
-        }        
-        $data['deparment'] =  $dp;
-        //$data = gettablecols('t_assets',$re);
-        $map2 = [];
-        if(isset($re['minvalue'])){
-            if($re['minvalue']!=''){
-                $data['value'] =['>=',$re['minvalue']];
-            }
-        }
-        if(isset($re['maxvalue'])){
-            if($re['maxvalue']!=''){
-                $map2['value'] = ['<=',$re['maxvalue']];
-            }
-        }
-        if(isset($re['minDate'])){
-            if($re['minDate']!=''){
-                $data['start_time'] = [">=",$re['minDate']];
-            }
-        }
-        if(isset($re['maxDate'])){
-            if($re['maxDate']!=''){
-                $map2['start_time'] = ["<=",$re['maxDate']];
-            }
-        }
-        $rt = getDataToJson('assets',$data,'*','asset_id',$page,$pagesize,$map2);
-        return $rt;  
-    }
-
-
-    public function getassetdelphi(){
-        $re = input('post.');
-        $rule =   [
-            'token'   =>  'require',
-        ];
-        $message  =   [
-            'token.require' => '身份令牌必须提供',
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogindelphi($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-        //$userid = $loginstatus['msg'];
-
-
-
-
-        if(isset($re['page'])){
-            $page = $re['page'] ;
-        }else{
-            $page = 0;
-        }
-        if(isset($re['pagesize'])){
-            $pagesize = $re['pagesize'] ;
-        }else{
-            $pagesize = 50;
-        }
-        $data = gettablecols('t_assets',$re);        
-        foreach ($data as $key => $value) {
-            if($value==''){
-                unset($data[$key]);
-            }
-        }        
-        //$data = gettablecols('t_assets',$re);
-        $map2 = [];
-        if(isset($re['minvalue'])){
-            if($re['minvalue']!=''){
-                $data['value'] =['>=',$re['minvalue']];
-            }
-        }
-        if(isset($re['maxvalue'])){
-            if($re['maxvalue']!=''){
-                $map2['value'] = ['<=',$re['maxvalue']];
-            }
-        }
-        if(isset($re['minDate'])){
-            if($re['minDate']!=''){
-                $data['start_time'] = [">=",$re['minDate']];
-            }
-        }
-        //$data['print_status']='打印中';
-        $data['print_status']='打印中';
-        if(isset($re['maxDate'])){
-            if($re['maxDate']!=''){
-                $map2['start_time'] = ["<=",$re['maxDate']];
-            }
-        }
-        $rt = getDataToJson('assets',$data,'*','seq',$page,$pagesize,$map2);
+        $rt = getDataToJson('assets',$data,'*','CreateDate',$page,$pagesize,$map2);
         return $rt;  
     }
     // 固定资产模糊查询
@@ -408,26 +101,7 @@ class Index extends Controller
                 $map2['start_time'] = ["<=",$re['maxDate']];
             }
         }
-
-        if(isset($re['maxDate'])){
-            if($re['maxDate']!=''){
-                $map2['start_time'] = ["<=",$re['maxDate']];
-            }
-        }
-
-        if(isset($re['print_status'])){
-            if($re['print_status']!=''){
-                $map2['print_status'] = ["in",rtrim($re['print_status'],",")];                
-            }
-        }
-
-
-        if(isset( $re['keystr'])){
-            $keystr = $re['keystr'];
-        }
-
-
-        
+        $keystr = $re['keystr'];
         //$re['value']='0';
         
 
@@ -436,18 +110,10 @@ class Index extends Controller
                 unset($data[$key]);
             }
         }
-
-        if(isset($data['print_status'])){
-            unset($data['print_status']);
-        }
-        
-        $rt = getDataToJson('assets',$data,'','asset_id',$page,$pagesize,$map2,$keystr);
-        
+        $rt = getDataToJson('assets',$data,'','CreateDate',$page,$pagesize,$map2,$keystr);
         //$rt = gettable('t_Assets');
         return $rt;  
     }
-
-    
 
     // 标签绑定精确查询
     // 实现对标签绑定结果的查询，支持分页（page和pagesize参数），支持资产价值的范围查询（minvalue、maxvalue）；支持启用日期的范围查询（minDate、maxDate）
@@ -591,12 +257,10 @@ class Index extends Controller
         }
     }
 
-    // 新建或更新计划接口（即生成盘点计划）
+    // 新建计划接口（即生成盘点计划）
     // 输入参数必须有plan_name（盘点计划名称），token：用户令牌，deadline（失效时间）和plan_memo(计划描述)是可选项。
-    //更新数据：需要提供plan_id;作为更新主键。
-    // 新增计划后返回plan_id，作为选择盘点计划对应资产的父ID；
-    //新增返回样例：{"ID":"1","msg":"新增计划成功，计划编号：9"}
-    //更新返回样例：{"ID":"1","msg":"更新计划成功，计划ID：9"}
+    // 生成计划后返回plan_id，作为选择盘点计划对应资产的父ID；
+    //返回样例：{"ID":"1","msg":"9"}
     public function putchecksplan(){
         $re = input('post.');
         $rule =   [
@@ -622,147 +286,19 @@ class Index extends Controller
 
         $data = gettablecols('t_checks_plan',$re);
         $data['create_person']=$userid;
-        if(isset($data['plan_id'])){
-            $i = updata('t_checks_plan',['plan_id'=>$data['plan_id']],$data);
-            if($i>0){
-                return rtjson('更新计划成功，计划ID：'.$data['plan_id'],'1');
-            }else{
-                return rtjson('更新数据失败。');
-            }
+        $i = insert('t_checks_plan',$data);
+        if($i>0){
+            return rtjson($i,'1');
         }else{
-            $i = insert('t_checks_plan',$data);
-            if($i>0){
-                return rtjson('新增计划成功，计划编号：'.$i,'1');
-            }else{
-                return rtjson('添加数据失败。');
-            }
+            return rtjson('添加数据失败。');
         }
-        
     }
-    // 删除盘点计划
-    // 输入参数：plan_id（盘点计划id）.
-    // 返回样例：{"ID":"1","msg":"盘点计划已删除，计划编号：9"}
-    public function deletechecksplan(){
-        $re = input('post.');
-        $rule =   [
-            'plan_id'  => 'require',
-            'token' => 'require'
-        ];
-        $message  =   [
-            'plan_name.require' => '盘点id必须提供',
-            'token.require' => 'token必须提供' 
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        $loginInfo = islogin($re['token']);
-        //$user = getUserfortocken($re['token']);
-        if($loginInfo['ID']=="-1"){
-            return rtjson('登录超时');
-        }
-        $userid = $loginInfo['msg'];
-        //userlog($oid,$otype='user',$detail,$modelname='sys',$ltype='sys')
-
-        $data = gettablecols('t_checks_plan',$re);
-        //$data['create_person']=$userid;
-        if(isset($data['plan_id'])){
-            $i = delete('t_checks_plan',['plan_id'=>$data['plan_id']]);
-            if($i>0){
-                userlog($userid,'user','delete  from t_checks_plan where plan_id = \''.$data['plan_id'].'\'','res','deletechecksplan');
-                return rtjson('删除计划成功，计划ID：'.$data['plan_id'],'1');
-
-            }else{
-                return rtjson('删除数据失败。');
-            }
-        }
-        
-    }
-
-    // 资产盘点计划查询
-    // 实现对资产盘点计划的查询功能，支持分页（page和pagesize参数），支持对盘点计划名称和盘点计划创建人的模糊查询（模糊查询参数是keystr）；
-    // 返回结果：{"data":[{"plan_id":1,"plan_name":"欧要建一个计划","plan_memo":"多到多得","deadline":"2018-12-10","create_person":"haozb","exeResult":"OK","CreateDate":"0000-00-00 00:00:00"}],"count":1}
-    public function getchecksplanAll(){
-        $re = input('post.');
-        $rule =   [
-            'token' => 'require'
-        ];
-        $message  =   [
-            'token.require' => 'token必须提供' 
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        $loginInfo = islogin($re['token']);
-        //$user = getUserfortocken($re['token']);
-        if($loginInfo['ID']=="-1"){
-            return rtjson('登录超时');
-        }
-        $userid = $loginInfo['msg'];
-        if(isset($re['page'])){
-            $page = $re['page'] ;
-        }else{
-            $page = 0;
-        }
-        if(isset($re['pagesize'])){
-            $pagesize = $re['pagesize'] ;
-        }else{
-            $pagesize = 10;
-        }
-        $data = gettablecols('t_checks_plan',$re);
-        foreach ($data as $key => $value) {
-            if($value==''){
-                unset($data[$key]);
-            }
-        }
-        $orgname = getOrgToUserID($userid);
-        $keystr = "";
-        if(isset($re['keystr'])){$keystr = $re['keystr'] ;}
-        //$rt = Db::s
-        //p($data);
-        //$rt = getDataToJson('assets',$data,'','CreateDate',$page,$pagesize,$map2,$keystr);
-        //select DISTINCT(p.plan_id),p.* from t_checks_plan p , t_checks_detail d,t_assets a  where p.plan_id = d.plan_id and a.asset_num = d.asset_num and a.deparment = 'admin'
-        // $rt = Db::select("assets",'asset_num')
-        //     ->view('checks_detail','asset_num','checks_detail.asset_num=assets.asset_num')
-        //     ->view('checks_plan','plan_id,plan_name,plan_memo,deadline,create_person,exeResult,CreateDate','checks_plan.plan_id=checks_detail.plan_id')
-        //     ->view('orgtouser','orgID','assets.deparment_id=orgtouser.OrgID')
-        //     ->where(['assets.deparment'=>'admin','checks_plan.Tag'=>'1'])
-        //     ->select();
-        //return $rt = getDataToJson('checks_plan',$data,'','asset_id',$page,$pagesize,$map2,$keystr);
-        return getDataToJsonLike('checks_plan',$data,'*','CreateDate desc ',$page,$pagesize,'plan_name|create_person',$keystr);
-        // $rt = select("select DISTINCT(p.plan_id),plan_name,plan_memo,deadline,create_person,exeResult,p.CreateDate from t_checks_plan p , t_checks_detail d,t_assets a  where p.plan_id = d.plan_id and a.asset_num = d.asset_num and a.deparment = '".$orgname[0]['OrgName']."' and p.tag='1' and p.exeResult = '待盘点' and d.check_flag = '未盘点'");
-        // $data['data']=$rt;
-        // return json($data);
-        
-    }
-
-
 
     // 资产盘点计划查询
     // 实现对资产盘点计划的查询功能，支持分页（page和pagesize参数），支持对盘点计划名称的模糊查询（模糊查询参数是plan_name）；
     // 返回结果：{"data":[{"plan_id":1,"plan_name":"欧要建一个计划","plan_memo":"多到多得","deadline":"2018-12-10","create_person":"haozb","exeResult":"OK","CreateDate":"0000-00-00 00:00:00"}],"count":1}
     public function getchecksplan(){
         $re = input('post.');
-        $rule =   [
-            'token' => 'require'
-        ];
-        $message  =   [
-            'token.require' => 'token必须提供' 
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        $loginInfo = islogin($re['token']);
-        //$user = getUserfortocken($re['token']);
-        if($loginInfo['ID']=="-1"){
-            return rtjson('登录超时');
-        }
-        $userid = $loginInfo['msg'];
         if(isset($re['page'])){
             $page = $re['page'] ;
         }else{
@@ -779,22 +315,11 @@ class Index extends Controller
                 unset($data[$key]);
             }
         }
-        $orgname = getOrgToUserID($userid);
-        //$rt = Db::s
         //p($data);
         //$rt = getDataToJson('assets',$data,'','CreateDate',$page,$pagesize,$map2,$keystr);
-        //select DISTINCT(p.plan_id),p.* from t_checks_plan p , t_checks_detail d,t_assets a  where p.plan_id = d.plan_id and a.asset_num = d.asset_num and a.deparment = 'admin'
-        // $rt = Db::select("assets",'asset_num')
-        //     ->view('checks_detail','asset_num','checks_detail.asset_num=assets.asset_num')
-        //     ->view('checks_plan','plan_id,plan_name,plan_memo,deadline,create_person,exeResult,CreateDate','checks_plan.plan_id=checks_detail.plan_id')
-        //     ->view('orgtouser','orgID','assets.deparment_id=orgtouser.OrgID')
-        //     ->where(['assets.deparment'=>'admin','checks_plan.Tag'=>'1'])
-        //     ->select();
-
-        $rt = select("select DISTINCT(p.plan_id),plan_name,plan_memo,deadline,create_person,exeResult,p.CreateDate from t_checks_plan p , t_checks_detail d,t_assets a  where p.plan_id = d.plan_id and a.asset_num = d.asset_num and a.deparment = '".$orgname[0]['OrgName']."' and p.tag='1' and p.exeResult = '待盘点' and d.check_flag = '未盘点'");
-        $data['data']=$rt;
-        return json($data);
-        
+        $rt = getdsJson('checks_plan',$data,'*','CreateDate desc',$page,$pagesize);
+        //$rt = gettable('t_Assets');
+        return $rt;           
     }
 
     // 查询某一盘点计划下面的资产列表（任务表）
@@ -838,61 +363,6 @@ class Index extends Controller
         return $rt;           
     }
 
-    public function getchecksplanreport(){
-        $re = input('post.');
-        $rule =   [
-            'plan_id'  => 'require',
-            'result' => 'require'
-        ];
-        $message  =   [
-            'plan_id.require' => '盘点计划编号必须提供',
-            'result.require' => '盘点状态码编号必须提供，值1表示正常，0表示异常'
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-
-        if(isset($re['page'])){
-            $page = $re['page'] ;
-        }else{
-            $page = 0;
-        }
-        if(isset($re['pagesize'])){
-            $pagesize = $re['pagesize'] ;
-        }else{
-            $pagesize = 20;
-        }
-
-        $data = gettablecols('t_checks_detail',$re);
-        foreach ($data as $key => $value) {
-            if($value==''){
-                unset($data[$key]);
-            }
-        }
-        $rt = '';
-        $map2= '';
-        if($re['result']=='0'){
-            $map2 = 'check_result is null';
-        }
-
-        if($re['result']=='1'){
-            $map2 = "check_result = '正常'";
-        }
-        $keystr = '';
-        if(isset($re['keystr'])){
-            $keystr = $re['keystr'] ;
-        }
-        //p($data);
-        $rt = getDataToJson('checks_detail',$data,'*','check_date desc',$page,$pagesize,$map2,$keystr);
-        //$rt = getdsJson('checks_detail',$data,'*','check_date desc ',$page,$pagesize);
-        //$rt = gettable('t_Assets');
-        return $rt;           
-    }
-
-
-
     // 查询某一盘点计划下面的资产列表（任务表）
     // 实现对盘点计划的资产列表进行查询，支持分页（page和pagesize参数），支持对盘点计划名称的模糊查询（模糊查询参数是plan_name）；plan_id是必填项。
     // 返回结果：{"data":[{"asset_num":"14-16101JC","name":"He-3制冷机","deparment":"N08组","start_time":"2018-11-05 23:21:29","location":"*","detail_id":3,"plan_id":2,"check_flag":"已盘点","check_result":"正常","check_memo":"测试3","pic1":"","pic2":"","pic3":"","pic4":"","pic5":"","video":"","check_date":"2018-11-04 16:25:17","check_person":"haozb","check_device_id":"3"},{"asset_num":"12-13086","name":"机械泵","deparment":"N08组","start_time":"2018-11-05 23:21:29","location":"*","detail_id":1,"plan_id":2,"check_flag":"已盘点","check_result":"正常","check_memo":"1","pic1":"","pic2":"","pic3":"","pic4":"","pic5":"","video":"","check_date":"2018-11-04 16:25:17","check_person":"haozb","check_device_id":"3"},],"count":1}
@@ -928,17 +398,10 @@ class Index extends Controller
             }
         }
 
-        $order = 'check_date desc';
-        if(isset($re['order'])){
-            if($re['order'] != ''){
-               $order =  str_replace("'", "’", $re['order']);
-            }
-        }
-
-        $list['data'] = Db::view('assets','asset_num, `name`, EPC,deparment,start_time,location ')
+        $list['data'] = Db::view('assets','asset_num, `name`, deparment,start_time,location ')
           ->view('checks_detail','*','assets.asset_num = checks_detail.asset_num')
           ->where($data)
-          ->order($order)
+          ->order('check_date desc')
           ->page($page,$pagesize)
           ->select();
           //->where('name|maker_name|assets.asset_num|person|deparment','like','%'.$keystr.'%')
@@ -1002,39 +465,24 @@ class Index extends Controller
             return rtjson('添加数据失败。');
         }         
     }
-    //删除已注册的读写器
-    //需要输入必填参数reader_id 。
-    //post 方式
-    //return {"ID":"1","msg":"OK,deleted device succeed,device id is 5"}
-    public function deleteReader(){
-        $re = input('?post.reader_id')?input('post.reader_id'):'';
-        if($re==''){return json(['ID'=>'-1','msg'=>'no data deleted. this reader_id is null.']);}
-        delete("t_reader_register",["reader_id"=>$re]);  
-        return json(['ID'=>'1','msg'=>"OK,deleted device succeed,device id is ".$re]);
-    }
 
-    //激活读写器
-    //需要输入必填参数reader_name  （终端名称）,reader_type （终端类型：移动、固定）,maker_name （设备厂商）,deparment（使用部门），status （状态：启用，禁用），rdkey（设备序列号.
-    //可选参数：location (所在位置)、model_num （设备型号）、start_time （启用日期）、
+
+    //注册读写器
+    //需要输入必填参数reader_name  （终端名称）,reader_type （终端类型：移动、固定）,maker_name （设备厂商）,
+    //可选参数：location (所在位置)、model_num （设备型号）、start_time （启用日期）、status （状态：启用，禁用）
     //post 方式
-    //return {"ID":"1","msg":"OK,更新成功."}
+    //return {"ID":"1","msg":"OK"}
     public function putReaderRegist(){
         $re = input('post.');
         $rule =   [
             'reader_name'  => 'require',
             'reader_type'  => 'require',
-            'maker_name'  => 'require',
-            'status'    => 'require',
-            'rdkey'    => 'require',
-            'deparment'    => 'require'
+            'maker_name'  => 'require'
         ];
         $message  =   [
             'reader_name.require' => '终端名称必须提供',  
             'reader_type.require' => '终端类型必须提供（手持、固定）',  
             'maker_name.require' => '终端厂商必须提供',  
-            'status.require' => '注册终端状态信息必须提供',  
-            'rdkey.require' => '注册终端设备序列号必须提供',  
-            'deparment.require' => '使用部门必须提供',  
         ];
         $validate = new Validate($rule,$message);
         $result = $validate->check($re);
@@ -1042,21 +490,18 @@ class Index extends Controller
             return rtjson('校验失败:'.$validate->getError());
         }
         $data = gettablecols('t_reader_register',$re);
-        //$data['rdkey'] = guid();
+        $data['rdkey'] = guid();
         if(!isset($data['start_time'])){
             $data['start_time'] = date("Y-m-d");
         }
         if(!isset($data['status'])){
             $data['status'] = '启用';
         }
-        if(isset($data['reader_id'])){
-            unset($data['reader_id']);
-        }
-        $i = updata('t_reader_register',['rdkey'=>$re['rdkey']],$data);
+        $i = insert('t_reader_register',$data);
         if($i>0){
-            return rtjson('OK,更新成功.','1');
+            return rtjson('OK','1');
         }else{
-            return rtjson('更新数据失败。');
+            return rtjson('添加数据失败。');
         }
     }
     // 手持机获取服务器端盘点任务，根据手持端用户登录账号（token）确定获取的任务信息；
@@ -1064,80 +509,6 @@ class Index extends Controller
     // 返回信息：任务id，资产id，资产名称，资产部门，资产编号，标签编号
     //返回样例：{"data":[{"asset_num":"J201605","name":"物理所园区道路","financial_category":"固定资产-房屋构筑物","value":192705,"parent_name":null,"model_num":null,"person":null,"deparment":"中国科学院物理研究所","start_time":"2018-11-01 13:29:04","location":"*","plan_id":8,"detail_id":15,"check_flag":"未盘点","check_result":null}],"count":5}
     public function getcheckstask(){
-        $re = input('get.');
-        $rule =   [
-            'token'  => 'require',
-            'rdkey'  => 'require',
-        ];
-        $message  =   [
-            'token.require' => '身份令牌必须提供',
-            'rdkey.require' => '设备接入码必须提供',
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        if(isset($re['page'])){
-            $page = $re['page'] ;
-        }else{
-            $page = 0;
-        }
-        if(isset($re['pagesize'])){
-            $pagesize = $re['pagesize'] ;
-        }else{
-            $pagesize = 10;
-        }
-
-        
-        //P($data);
-        if(!isset($data['check_flag'])){
-            $data['check_flag']='未盘点';
-        }
-
-        $token = $re['token'];
-        $rdkey = $re['rdkey']; 
-        $loginstatus = islogin($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-
-
-        $orginfo = getOrgToUserID($loginstatus['msg']);
-        $device = getdeviceinfoforrdkey($rdkey);
-        if($device['reader_id']==""){
-            return json(["ID"=>'-1',"msg"=>'设备尚未注册，注册后再操作.']);
-        }
-        if($device['status']=="禁用"){
-            return json(["ID"=>'-1',"msg"=>'设备已禁用.请启用后再操作.']);
-        }
-        $data = gettablecolsList(['t_checks_detail','t_assets'],$re);
-        foreach ($data as $key => $value) {
-            if($value==''){
-                unset($data[$key]);
-            }
-        }
-        //p($orginfo);
-        $data['deparment'] = $orginfo[0]['OrgName'];
-        //p($data);
-        //$rt = getDataToJson('assets',$data,'','CreateDate',$page,$pagesize,$map2,$keystr);
-        //select asset_num, `name`, financial_category,`value`, parent_name,model_num,person,deparment,start_time,location from t_assets
-        //select detail_id,plan_id,asset_num,check_flag,check_result,check_memo,pic1,pic2,pic3,pic4,pic5,video,check_date,check_person from t_checks_detail
-        $list['data'] = Db::view('assets','asset_num, `name`, financial_category,`value`, parent_name,model_num,person,deparment,start_time,location ')
-          ->view('checks_detail','detail_id,plan_id,detail_id, check_flag,check_result','assets.asset_num = checks_detail.asset_num')
-          ->where($data)
-          ->order('location, start_time')
-          ->page($page,$pagesize)
-          ->select();
-          //->where('name|maker_name|assets.asset_num|person|deparment','like','%'.$keystr.'%')
-        $list['count'] = Db::view('assets','*')
-          ->view('checks_detail','*','assets.asset_num = checks_detail.asset_num')
-          ->where($data)          
-          ->count('*');//->where('name|maker_name|assets.asset_num|person|deparment','like','%'.$keystr.'%')
-      return json($list);           
-    }
-
-    public function postcheckstask(){
         $re = input('post.');
         $rule =   [
             'token'  => 'require',
@@ -1210,303 +581,8 @@ class Index extends Controller
           ->count('*');//->where('name|maker_name|assets.asset_num|person|deparment','like','%'.$keystr.'%')
       return json($list);           
     }
-    //打印标签回传接口（批量）。
-    //输入参数说明：
-    //print_list:是二元组，包括盘点任务表ID(asset_id)，通过json返回，格式如下：
-    //[{"asset_id":"1","print_status":"已打印","print_command":"command_string"},{"asset_id":"2","print_status":"未打印","print_command":"command_string"},{"asset_id":"5","print_status":"待打印"},"print_command":"command_string"]
-    //print_status为待打印，及打印机会自动获取打印。  
-    // token ： 用户认证token， 
-    // 返回样例：{"ID":"1","msg":"OK，changed  print_status 3 rows . "}
-    public function ChangePrintStatusAll(){
-        $re = input('post.');
-        $rule =   [
-            'print_list'  => 'require',
-            'token'   =>  'require',
-        ];
-        $message  =   [
-            'print_list.require' => '打印的资产列表必须提供',
-            'token.require' => '身份令牌必须提供',
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
 
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogin($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-        $userid = $loginstatus['msg'];
-        $assetsData = [];
-        $printlist = json_decode($re['print_list'],true); 
-        //p($assetList);
-        foreach ($printlist as $k => $v) {
-                $assetsData[] = [   'asset_id' => $v['asset_id'],'print_status' => $v['print_status'],'print_command' =>''];
 
-                //$assetsData[] = $temp2;           
-        }
-        //$i = insertAll('t_tag_print',$data);
-        $i = saveAll($assetsData,'t_assets','asset_id');
-        //$rttag = $i-$j;
-        if($i>0){
-            return rtjson('OK，changed  print_status '.$i.' rows . ','1');
-        }else{
-            return rtjson('打印异常.');
-        }        
-    }
-    //打印标签回传接口（批量）。
-    //输入参数说明：
-    //print_list:是二元组，包括盘点任务表ID(asset_id)，通过json返回，格式如下：
-    //[{"asset_id":"1","print_status":"已打印","print_command":"command_string"},{"asset_id":"2","print_status":"未打印","print_command":"command_string"},{"asset_id":"5","print_status":"待打印"},"print_command":"command_string"]
-    //print_status为待打印，及打印机会自动获取打印。  
-    // token ： 用户认证token， 
-    // 返回样例：{"ID":"1","msg":"OK，changed  print_status 3 rows . "}
-    public function SetPrintCommandAndStatus(){
-        $re = input('post.');
-        $rule =   [
-            'print_list'  => 'require',
-            'token'   =>  'require',
-            'tag_tpl_id' =>'require'
-        ];
-        $message  =   [
-            'print_list.require' => '打印的资产列表必须提供',
-            'token.require' => '身份令牌必须提供',
-            'tag_tpl_id.require' => '打印模板ID必须提供'
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogin($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-        $userid = $loginstatus['msg'];
-        $assetsData = [];
-        $printlist = json_decode($re['print_list'],true); 
-        $str = gettablecol("t_tag_tpl",["tag_tpl_id"=>$re['tag_tpl_id']],"tag_command");
-        
-        //p($assetList);
-        //$database =  Db::table('t_assets');
-
-        foreach ($printlist as $k => $v) {
-                $rows = Db::table('t_assets')->where(['asset_id' => $v['asset_id']])->find();
-                //$rows['name'] = substr(0,10, $rows['name']);
-                if(mb_strlen($rows['name'],"utf-8")<=8){
-                    $rows['namsize'] = '15';
-                }elseif (mb_strlen($rows['name'],"utf-8")<15) {
-                    $rows['namsize'] = '10';
-                }else{
-                    $rows['namsize'] = '08';
-                }
-                if(mb_strlen($rows['deparment'],"utf-8")<=8){
-                    $rows['depsize'] = '15';
-                }elseif (mb_strlen($rows['deparment'],"utf-8")<15) {
-                    $rows['depsize'] = '10';
-                }else{
-                    $rows['depsize'] = '08';
-                }
-                $command = str_repls($str,$rows);
-                $assetsData[] = [   'asset_id' => $v['asset_id'],'print_status' => $v['print_status'],'print_command' =>$command];
-                //$assetsData[] = $temp2;           
-        }
-        //$i = insertAll('t_tag_print',$data);
-        $i = saveAll($assetsData,'t_assets','asset_id');
-        //$rttag = $i-$j;
-        if($i>0){
-            return rtjson('OK，changed  print_status '.$i.' rows . ','1');
-        }else{
-            return rtjson('打印异常.');
-        }        
-    }
-
-    //打印标签回传接口（批量）。
-    //输入参数说明：
-    //print_list:是四元组，包括盘点任务表ID(asset_num)，tid，print_rt打印结果，tag_type标签类型，通过json返回，格式如下：
-    //[{"asset_id":"1","tid":"1234143143243","print_rt":"1","tag_type":"普通RFID"},{"asset_id":"2","tid":"1235573143243","print_rt":"0","tag_type":"普通RFID"}]
-    //其中print_rt状态  1：正常；0：异常;正常时会更新t_asset表print_status状态为“已打印”
-    // token ： 用户认证token， 
-    // 返回样例：{"ID":"1","msg":"OK，print 3 tags,succeed 2 tags. "}
-    public function putPrintStatusAll(){
-        $re = input('post.');
-        $rule =   [
-            'print_list'  => 'require',
-            'token'   =>  'require',
-        ];
-        $message  =   [
-            'print_list.require' => '打印的资产列表必须提供',
-            'token.require' => '身份令牌必须提供',
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogin($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-        $userid = $loginstatus['msg'];
-        
-        $data = [];
-        $assetsData = [];
-        $printlist = json_decode($re['print_list'],true); 
-        //p($assetList);
-        foreach ($printlist as $k => $v) {
-            $temp = [
-                'asset_id'=>$v['asset_id'],
-                'tid'=>$v['tid'],
-                'print_tag'=>$v['print_rt'],
-                'printperson'=>$userid
-                ];
-            $data[] = $temp;
-            if($v['print_rt'] == '1'){
-                $temp2 = [   'asset_id' => $v['asset_id'],
-                                    'print_status' => '已打印',
-                                    'tag_type' => isset($v['tag_type']) ? $v['tag_type'] : "普通RFID"
-                                ];
-                $assetsData[] = $temp2;
-            }            
-        }
-        $i = insertAll('t_tag_print',$data);
-        $j = saveAll($assetsData,'t_assets','asset_id');
-        //$rttag = $i-$j;
-        if($i>0){
-            return rtjson('OK，print '.$i.' tags , succeed '.$j.' tags . ','1');
-        }else{
-            return rtjson('打印异常.');
-        }        
-    }
-    public function putPrintStatusAlldelphi(){
-        $re = input('post.');
-        $rule =   [
-            'print_list'  => 'require',
-            'token'   =>  'require',
-        ];
-        $message  =   [
-            'print_list.require' => '打印的资产列表必须提供',
-            'token.require' => '身份令牌必须提供',
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogindelphi($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-        $userid = $loginstatus['msg'];
-        
-        $data = [];
-        $assetsData = [];
-        $txt = str_replace(['\'[',',]\''], ['[',']'], $re['print_list']);
-        $txt = str_replace(',]', ']', $txt);
-        $printlist = json_decode($txt,true); 
-        //p($assetList);
-        foreach ($printlist as $k => $v) {
-            $temp = [
-                'asset_id'=>$v['asset_id'],
-                'tid'=>$v['tid'],
-                'print_tag'=>$v['print_rt'],
-                'printperson'=>$userid
-                ];
-            $data[] = $temp;
-            if($v['print_rt'] == '1'){
-                $temp2 = [   'asset_id' => $v['asset_id'],
-                                    'print_status' => '已打印',
-                                    'tag_type' => isset($v['tag_type']) ? $v['tag_type'] : "普通RFID"
-                                ];
-                $assetsData[] = $temp2;
-            }            
-        }
-        $i = insertAll('t_tag_print',$data);
-        $j = saveAll($assetsData,'t_assets','asset_id');
-        //$rttag = $i-$j;
-        if($i>0){
-            return rtjson('OK，print '.$i.' tags , succeed '.$j.' tags . ','1');
-        }else{
-            return rtjson('打印异常.');
-        }        
-    }
-    
-    //打印标签回传接口（单个回传）。
-    //输入参数说明：
-    //asset_id，tid，print_rt打印结果，tag_type标签类型。
-    //其中print_rt状态  1：正常；0：异常;正常时会更新t_asset表print_status状态为“已打印”
-    // token ： 用户认证token， 
-    // 返回样例：{ID: "1", msg: "print tags OK , asset_id = 10 ."}
-    public function putPrintStatus(){
-        $re = input('post.');
-        $rule =   [
-            'asset_id'  => 'require',
-            'tid'  => 'require',
-            'print_rt'  => 'require',
-            'tag_type'  => 'require',
-            'token'   =>  'require',
-        ];
-        $message  =   [
-            'asset_id.require' => '资产ID必须提供',
-            'tid.require' => '标签tid必须提供',
-            'print_rt.require' => '打印结果必须提供',
-            'tag_type.require' => '标签类型必须提供',
-            'token.require' => '身份令牌必须提供',
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogin($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-        $userid = $loginstatus['msg'];
-
-        $data = [
-            'asset_id'=>$re['asset_id'],
-            'tid'=>$re['tid'],
-            'print_tag'=>$re['print_rt'],
-            'printperson'=>$userid
-            ];
-
-        $i = insert('t_tag_print',$data);
-        $j = 0 ;
-        if($i >0 and $re['print_rt']=='1'){
-            $assetsData = ['print_status' => '已打印',
-                       'tag_type' => isset($re['tag_type']) ? $re['tag_type'] : "普通RFID"
-                      ];
-            $j = updata('t_assets',['asset_id' => $re['asset_id']],$assetsData);
-
-        }
-        
-        if($i>0){
-            if($j>0){
-                return rtjson('print tags OK , asset_id = '.$re['asset_id'].' .','1');
-            }else{
-                return rtjson(' print tags failed ,  asset_id = '.$re['asset_id'].' . ');
-            }
-            
-        }else{
-            return rtjson('打印异常.');
-        }        
-    }
 
     //盘点结果上传接口
     //手持端，通过该接口将结果上传到服务器端。
@@ -1536,15 +612,16 @@ class Index extends Controller
         }
         //$data = gettablecols('t_checks_plan',$re);
         $token = $re['token'];
-        $loginstatus = islogindelphi($token);
-        
+        $loginstatus = islogin($token);
+        if($loginstatus['ID']=="-1"){
+           return rtjson('登录超时，请重新登录.'); 
+        }
         $userid = $loginstatus['msg'];
         $device = getdeviceinfoforrdkey($re['rdkey']);
         //$pid = $re['plan_id'];
         //前台传过来json，后台解析成数组；
         $data = [];
-        $list = str_replace("'","\"",$re['checkedlist']);
-        $assetList = json_decode($list,true); 
+        $assetList = json_decode($re['checkedlist'],true); 
         //p($assetList);
         foreach ($assetList as $k => $v) {
             $temp = [
@@ -1570,129 +647,7 @@ class Index extends Controller
             return rtjson('更新数据失败。');
         }
     }
-    //查询注册设备信息
-    //输入参数：reader_id
-    // reader_name
-    // location
-    // reader_type
-    // maker_name
-    // model_num
-    // status
-    // start_time
-    // rdkey
-    // deparment
-    // reguser
-    // token
-    // keystr  模糊查询，对reader_name、location、deparment、reguser进行模糊查询
-    // 返回样例：{"data":[{"reader_id":1,"reader_name":"RFID手持读写器","location":null,"reader_type":"手持","maker_name":"成为科技","model_num":"C71","status":"启用","start_time":"2018-11-03","rdkey":"DBF1945F-04AE-5DF9-FF0A","deparment":null,"reguser":null}],"count":1}
-    public function getRegDevice(){
-        $re = input('post.');
-        $rule =   [
-            'token'   =>  'require'
-        ];
-        $message  =   [
-            'token.require' => 'token必须提供',
-        ];
 
-
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-
-        if(isset($re['page'])){
-            $page = $re['page'] ;
-        }else{
-            $page = 0;
-        }
-        if(isset($re['pagesize'])){
-            $pagesize = $re['pagesize'] ;
-        }else{
-            $pagesize = 10;
-        }
-
-
-        
-        $data = gettablecols('t_reader_register',$re);
-        foreach ($data as $key => $value) {
-            if($value==''){
-                unset($data[$key]);
-            }
-        }
-
-        
-        //p($data);
-        //$rt = getDataToJson('assets',$data,'','CreateDate',$page,$pagesize,$map2,$keystr);
-        //$rt = getdsJson('reader_register',$data,'*','reader_id',$page,$pagesize);
-        //$rt = gettable('t_Assets');
-        //return $rt; 
-        $keystr = $re['keystr'];
-        //$re['value']='0';
-        $likecols = "reader_name|location|deparment|reguser";
-
-        $rt = getDataToJsonLike('reader_register',$data,'','reader_id',$page,$pagesize,$likecols,$keystr);
-        //$rt = gettable('t_Assets');
-        return $rt; 
-        
-
-        //$i = insert('t_reader_register',$data);
-        // if($i>0){
-        //     return rtjson('OK，注册成功，待审核。设备ID：'.$data["rdkey"],'1');
-        // }else{
-        //     return rtjson('注册失败。');
-        // }
-    }
-    //新购手持机注册
-    //注册先从手持端发起，手持端安装tvams软件后，点击【设置】---【注册】出发服务器端注册动作
-    //输入参数说明：
-    //rdkey:字符串；
-    // 返回样例：{"ID":"1","msg":"注册成功，待管理员审核."}
-    public function regDevice(){
-        $re = input('post.');
-        $rule =   [
-            'rdkey'   =>  'require',
-            'userid'   =>  'require'
-        ];
-        $message  =   [
-            'userid.require' => '用户名必须提供',
-            'rdkey.require' => '设备接入码必须提供',
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        //$data = gettablecols('t_checks_plan',$re);
-        //INSERT INTO t_reader_register(reader_name,reader_type,`status`,rdkey)values('RFID手持读写器','手持','待审核','0010432254325563462');
-
-        $data["reguser"] = $re['userid'];
-        //$data["rdkey"] = $re['rdkey'];
-        
-
-        $dv = getdeviceinfoforrdkey($re['rdkey']);
-        if($dv['rdkey']!=''){
-             $i = updata('t_reader_register',['rdkey'=>$re['rdkey']],$data);
-            if($i>0){
-                return rtjson('设备已提交注册申请，本次操作自动更新了注册人信息。设备ID：'.$re["rdkey"],'1');
-            }else{
-                return rtjson('注册失败，设备已注册，不能重复注册。');
-            }
-        }else{
-            $data["rdkey"] = $re['rdkey'];
-            $data["reader_name"] = 'RFID手持读写器';
-        $data["reader_type"] = '手持';
-        $data["status"] = '待审核';
-            $i = insert('t_reader_register',$data);
-            if($i>0){
-                return rtjson('OK，注册成功，待审核。设备ID：'.$data["rdkey"],'1');
-            }else{
-                return rtjson('注册失败。');
-            }
-        }
-
-        
-    }
     // 手持机获取当前用户已经盘点的资产列表；
     // 使用post方式，参数：rdkey (读写器接入码)，token：用户身份认真令牌，plan_id 盘点计划ID
     // 返回信息：任务id，资产编号，资产名称，资产部门，EPC，盘点结果，盘点描述（建议：首页显示资产名称，盘点结果，资产编号）,page和pagesize可选，默认当前页0，每页10条数据
@@ -1873,23 +828,20 @@ class Index extends Controller
                 unset($data[$key]);
             }
         }
-        $keystr =  "%".$re['keystr']."%";        
         $ds   =   Db::name('assets')
                     ->where($data)
-                    ->where('deparment|location|name|asset_num' ,'like',$keystr)
-                    ->field('asset_num, `name`, financial_category,`value`, parent_name,model_num,person,deparment,start_time,location,bind_status,epc ')
+                    ->field('asset_num, `name`, financial_category,`value`, parent_name,model_num,person,deparment,start_time,location,bind_status ')
                     ->order('deparment,start_time')
                     ->page($page,$pagesize)
                     ->select();
         $dscount = Db::name('assets')
                     ->where($data)
-                    ->where('deparment|location|name|asset_num' ,'like',$keystr)
                     ->count('*');
-        $rt['data'] = $ds;
-        // foreach ($ds as $key => $value) {
-        //     $value['EPC'] = bin2hex($value['asset_num']);
-        //     $rt['data'][] = $value;
-        // }
+        $rt = [];
+        foreach ($ds as $key => $value) {
+            $value['EPC'] = bin2hex($value['asset_num']);
+            $rt['data'][] = $value;
+        }
         $rt['count'] = $dscount ;
       return json($rt);   
     }
@@ -1947,197 +899,6 @@ class Index extends Controller
     }
 
     
-    // 新建或更新标签模板接口
-    // 输入参数必须有tpl_name（模板名称必须提供），token：用户令牌，tag_command（模板命令必须提供）和img(模板例图必须提供)。
-    //更新数据：需要提供tag_tpl_id;作为更新主键。
-    // 新增模板后返回tag_tpl_id；
-    //新增返回样例：{"ID":"1","msg":"新增模板成功，模板ID：9"}
-    //更新返回样例：{"ID":"1","msg":"新增计划成功，模板ID：9"}
-    public function putTpl(){
-        $re = input('post.');
-        $rule =   [
-            'tpl_name'  => 'require',
-            'tag_command'      => 'require',
-            'img'      => 'require',            
-            'token'      => 'require'
-        ];
-        $message  =   [
-            'tpl_name.require' => '模板名称必须提供',  
-            'tag_command.require' => '模板命令必须提供', 
-            'img.require' => '模板例图必须提供', 
-            'token.require' => '认证令牌token必须提供', 
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        $loginInfo = islogin($re['token']);
-        //$user = getUserfortocken($re['token']);
-        if($loginInfo['ID']=="-1"){
-            return rtjson('登录超时');
-        }
-        $userid = $loginInfo['msg'];
-        $data = gettablecols('t_tag_tpl',$re);
-        $data['CreatePerson']=$userid;
-        if(isset($data['tag_tpl_id'])){
-            $i = updata('t_tag_tpl',['tag_tpl_id'=>$data['tag_tpl_id']],$data);
-            if($i>0){
-                return rtjson('更新模板成功，模板ID：'.$data['tag_tpl_id'],'1');
-            }else{
-                return rtjson('更新数据失败。');
-            }
-        }else{
-            $i = insert('t_tag_tpl',$data);
-            if($i>0){
-                return rtjson('新增模板成功，模板编号：'.$i,'1');
-            }else{
-                return rtjson('添加数据失败。');
-            }
-        }
-        
-    }
-    //更改标签模板的默认状态
-    public function setDefultTpl(){
-        $re = input('post.');
-        $rule =   [
-            'tag_tpl_id'  => 'require',             
-            'token'      => 'require'
-        ];
-        $message  =   [
-            'tpl_name.require' => '模板名称必须提供',  
-            'token.require' => '认证令牌token必须提供',
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        $loginInfo = islogin($re['token']);
-        //$user = getUserfortocken($re['token']);
-        if($loginInfo['ID']=="-1"){
-            return rtjson('登录超时');
-        }
-        updata('t_tag_tpl',['ordertag'=>'1'],['ordertag'=>'0']);
-        $i = updata('t_tag_tpl',['tag_tpl_id'=>$re['tag_tpl_id']],['ordertag'=>'1']);
-       
-        if($i>0){
-            return rtjson('设置默认模板成功','1');
-        }else{
-            return rtjson('设置默认模板失败。');
-        }
-        
-        
-    }
-
-
-    // 删除模板
-    // 输入参数：tag_tpl_id（模板id）.
-    // 返回样例：{"ID":"1","msg":"模板已删除，模板编号：9"}
-    public function deleteTpl(){
-        $re = input('post.');
-        $rule =   [
-            'tag_tpl_id'  => 'require',
-            'token' => 'require'
-        ];
-        $message  =   [
-            'tag_tpl_id.require' => '模板id必须提供',
-            'token.require' => 'token必须提供' 
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        $loginInfo = islogin($re['token']);
-        //$user = getUserfortocken($re['token']);
-        if($loginInfo['ID']=="-1"){
-            return rtjson('登录超时');
-        }
-        $userid = $loginInfo['msg'];
-        //userlog($oid,$otype='user',$detail,$modelname='sys',$ltype='sys')
-
-        $data = gettablecols('t_tag_tpl',$re);
-        //$data['create_person']=$userid;
-        if(isset($data['tag_tpl_id'])){
-            $i = delete('t_tag_tpl',['tag_tpl_id'=>$data['tag_tpl_id']]);
-            if($i>=0){
-                userlog($userid,'user','delete  from t_tag_tpl where tag_tpl_id = \''.$data['tag_tpl_id'].'\'','res','deleteTpl');
-                return rtjson('删除模板成功，模板ID：'.$data['tag_tpl_id'],'1');
-
-            }else{
-                return rtjson('删除数据失败。');
-            }
-        }
-        
-    }
-
-    // 标签模板查询
-    // 实现对标签模板的查询功能，支持分页（page和pagesize参数），支持对模板名称或者部门的模糊查询（模糊查询参数是keystr）；支持对其他所有字段的精确查询
-    // 返回结果：json
-    public function getTpl(){
-        $re = input('post.');
-        $rule =   [
-            'token' => 'require'
-        ];
-        $message  =   [
-            'token.require' => 'token必须提供' 
-        ];
-        $keystr = "";
-        if(isset($re['keystr'])){
-            $keystr = $re['keystr'] ;
-        }
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        $loginInfo = islogin($re['token']);
-        //$user = getUserfortocken($re['token']);
-        if($loginInfo['ID']=="-1"){
-            return rtjson('登录超时');
-        }
-        $userid = $loginInfo['msg'];
-        if(isset($re['page'])){
-            $page = $re['page'] ;
-        }else{
-            $page = 0;
-        }
-        if(isset($re['pagesize'])){
-            $pagesize = $re['pagesize'] ;
-        }else{
-            $pagesize = 10;
-        }
-        $data = gettablecols('t_tag_tpl',$re);
-        foreach ($data as $key => $value) {
-            if($value==''){
-                unset($data[$key]);
-            }
-        }
-        $orgname = getOrgToUserID($userid);
-        return getDataToJsonLike('tag_tpl',$data,'*','CreateDate desc',$page,$pagesize,'tpl_name|tpl_deparment',$keystr);
-        //$rt = Db::s
-        //p($data);
-        //$rt = getDataToJson('assets',$data,'','CreateDate',$page,$pagesize,$map2,$keystr);
-        //select DISTINCT(p.plan_id),p.* from t_checks_plan p , t_checks_detail d,t_assets a  where p.plan_id = d.plan_id and a.asset_num = d.asset_num and a.deparment = 'admin'
-        // $rt = Db::select("assets",'asset_num')
-        //     ->view('checks_detail','asset_num','checks_detail.asset_num=assets.asset_num')
-        //     ->view('checks_plan','plan_id,plan_name,plan_memo,deadline,create_person,exeResult,CreateDate','checks_plan.plan_id=checks_detail.plan_id')
-        //     ->view('orgtouser','orgID','assets.deparment_id=orgtouser.OrgID')
-        //     ->where(['assets.deparment'=>'admin','checks_plan.Tag'=>'1'])
-        //     ->select();
-
-        // $rt = select("select DISTINCT(p.plan_id),plan_name,plan_memo,deadline,create_person,exeResult,p.CreateDate from t_checks_plan p , t_checks_detail d,t_assets a  where p.plan_id = d.plan_id and a.asset_num = d.asset_num and a.deparment = '".$orgname[0]['OrgName']."' and p.tag='1' and p.exeResult = '待盘点' and d.check_flag = '未盘点'");
-        // $data['data']=$rt;
-        // return json($data);
-        
-    }
-
-
-
-
-
-
     public function addepc()
     {
         echo bin2hex('00-11038');
@@ -2261,13 +1022,35 @@ class Index extends Controller
 
     public function test(){
         $token_url = "https://passport.escience.cn/oauth2/token";
-        $map['client_id']='92658';
-        $map['client_secret']='i4lCecACOc1fkM3dbsgscPzH2xml0qJo';
+        $map['client_id']='67571';
+        $map['client_secret']='UN9Y3foQdM1WvtlWMZMvXELlWYADHkXa';
         $map['grant_type']='authorization_code';
-        $map['redirect_uri']='http://159.226.186.90/asset/index/escienceAuthLogin';
-        $map['code']='http://159.226.186.90/asset/index';
+        $map['redirect_uri']='http://www.dev.arp.cn/reddit_callback';
+        $map['code']='http://www.dev.arp.cn/reddit_callback';
+        
         $respose = http($token_url, $map, 'POST', [], $timeout = 5);
         echo $respose;
+
+        //return gettable("t_sysuser");
+        //return gettable("t_sysuser");
+        //echo json([1::100]);
+        //email('haozb@zhong-ying.com',"test","ceshiceshi","13311568625@163.com","21249904@qq.com");
+       //echo userlog('haozb','user',"ceshi",'sys','sys');
+        //$rt = getUserfortocken('f31530fc958ed0aecb816e2ee486ee87');
+        //p($rt);
+        //return json($rt) ;//json();
+        // $str="1#2#3#4#5#";
+        // $var=explode("#",$str);
+        // print_r($var);
+        // echo gettablecol("t_sysuser",["UserID"=>'haozb'],'UserEmail');
+        // lg("nimen hao !");
+        // updata('t_sysuser','',['Password'=>'11111','UserID'=>'haozb123']);
+     
+        // //email('haozb@zhong-ying.com','222','22222222','15237374870@163.com');
+        // echo randomStr('23','num');
+        // return json(getcols(['t_sysuser','t_systree']));
+        // return sel('select * from t_sysuser');
+        lg("sdfafdsafdsafdsa");
         //echo input("get.id");
     }
     
@@ -2753,6 +1536,7 @@ class Index extends Controller
         $msg = delTree('t_systree',$re,'FatherID','FunID');  
         return json(['ID'=>'1','msg'=>$msg]);
     }
+
 
     //para将批量人员增加到组织中。
     //para : OrgID ,UserID [说明，其中UserID是逗号分隔的list，如果user1,user2,user3]
@@ -3284,280 +2068,7 @@ class Index extends Controller
         }
         return json($rt);
     }
-    /***
-    *通用文件上传
-    *单张图片通过base64字符串编码异步post方式上传。
-    *@param  token 用户身份认证码，必填。
-    *@imgbase64  图片转码成base64字符串流。格式为：data:image/jpeg;base64,
-    *@return 
-          $res["result"] = 1;  状态
-          $res["msg"] = "上传成功";  信息
-          $res["imgname"] = $ping_url ;  图片保存名称（页面提交时需要提交）；
-          $res["path"] = $basePutUrl;   图片路径
-        Json格式：{"result":1,"imgurl":"","msg":"上传成功","imgname":"41F5203C-D5C1-8AF9-B5A4.png","path":".\/Public\/assetinti\/"}
-    */
-    public function putImg(){
-        $re = input('post.');
-        $rule =   [
-            'token'   =>  'require',
-            'imgbase64' => 'require'
-        ];
-        $message  =   [
-            'token.require' => '身份令牌必须提供',
-            'imgbase64.require' => '图片资源码必须提供'
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogin($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-        $userid = $loginstatus['msg'];
-        $uprt = base64_image_content($re['imgbase64'],'CommFileDir');
-        if($uprt['result']==1){
-            return json($uprt);
-        }else
-        {
-            return rtjson("文件上传失败:"+$uprt['msg']);
-        }
-    }
-    /***
-    *获取资产图片
-    ***/
-    public function getAssetImg(){
-        $re = input('post.');
-        $rule =   [
-            'token'   =>  'require',
-            'asset_num' => 'require'
-        ];
-        $message  =   [
-            'token.require' => '身份令牌必须提供',
-            'asset_num.require' => '资产编码必须提供'
-        ];
-        //echo $_SERVER["DOCUMENT_ROOT"].'----------';
-        //echo $_SERVER["SCRIPT_NAME"] .'--------';
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogin($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-        //$checkpath = '/assetwls/Public/AssetIntiDir/'.$re['asset_num']
-        //$path = "/Public/AssetIntiDir/".
-
-        //$url='http://'.$_SERVER['SERVER_NAME'];//.$_SERVER["REQUEST_URI"]; 
-        //echo $url;
-        //echo './Public/AssetIntiDir/'.$re['asset_num'].'_zt.jpg';
-        //$pathHome = dirname($url);
-        $imgPath = '/assetwls/Public/AssetIntiDir/'.$re['asset_num'];
-        $checkpath = $_SERVER["DOCUMENT_ROOT"].$imgPath ;
-
-        $imageUrl['img_zt'] = "";
-        $curnum = 0;
-        if(file_exists($checkpath.'_zt.jpeg')){
-            //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            //"http://localhost/asset/res/index/Public/AssetIntiDir/http://localhost/asset/res/index/getAssetImggood_bq.jpg"
-            $imageUrl['img_zt'] =  $imgPath.'_zt.jpeg';
-            $curnum++;
-        }
-        $imageUrl['img_jb'] = "";
-        //$checkpath = $_SERVER['DOCUMENT_ROOT'].'/asset/Public/AssetIntiDir/'.$re['asset_num']; 
-        //echo $checkpath ;
-        //echo $checkpath.'_jb.jpg';
-        if(file_exists($checkpath.'_jb.jpeg')){
-            //echo $checkpath.'_jb.jpg';
-            //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            $imageUrl['img_jb'] =  $imgPath.'_jb.jpeg';
-            $curnum++;
-        }
-        $imageUrl['img_bq'] = "";
-        if(file_exists($checkpath.'_bq.jpeg')){
-            //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            $imageUrl['img_bq'] =  $imgPath.'_bq.jpeg';
-            $curnum++;
-        }
-        $imageUrl['img_qt'] = "";
-        if(file_exists($checkpath.'_qt.jpeg')){
-            //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            $imageUrl['img_qt'] =  $imgPath.'_qt.jpeg';
-            $curnum++;
-        }
-        $imageUrl['curnum'] = $curnum ;
-        return json($imageUrl);
-    } 
-
-    /***
-    *资产绑定初始化文件上传
-    *调用地址：http://132.232.65.200:8899/asset/res/index/putAssetImg
-    *单张图片通过base64字符串编码异步post方式上传。
-    *@param  token 用户身份认证码，必填。
-    *@imgbase64  图片转码成base64字符串流。格式为：data:image/jpeg;base64,
-    *@param  asset_num 资产编号，外键。
-    *@param  imgSeq 上传照片的顺序号，标签照:1；近景:2；远景:3；位置:4。
-    *@param  asset_name 文字识别的资产名称（服务器端与当前资产做核对)。
-    *@param  bind_location 上传图片的当前位置信息
-    *javascript调用参数组装：let params = {
-    *                            imgbase64: `${fileData}`,
-    *                            token: JSON.parse(window.sessionStorage.getItem('token')),
-    *                            asset_num: '00-13095',
-    *                            imgSeq: 2,
-    *                            asset_name: '等静压机'
-    *                            }
-    *@return     
-    * {"ID":"1","msg":"资产照片上传成功，照片名称：7CE2B683-8CB5-BD22-395D.png"}
-    */
-    public function putAssetImg(){
-        $re = input('post.');
-        $rule =   [
-            'token'   =>  'require',
-            'imgbase64' => 'require',
-            'asset_num' => 'require',
-            'imgSeq'    =>  'require',
-            'asset_name'=> 'require'
-        ];
-        $message  =   [
-            'token.require' => '身份令牌必须提供',
-            'imgbase64.require' => '图片资源码必须提供',
-            'asset_num.require' => '资产编码必须提供',
-            'imgSeq.require' => '照片顺序号必须提供',
-            'asset_name.require' => '资产名称必须提供'
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogin($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-        $userid = $loginstatus['msg'];
-        $uprt = base64_image_content($re['imgbase64'],'AssetIntiDir',$re['asset_num'].$re['imgSeq']);
-        if($uprt['result']==1){
-            //在这里插入资产数据
-            $data['asset_num'] = $re['asset_num'];
-            $data['img_seq'] = $re['imgSeq'];
-            $data['asset_name'] = $re['asset_name'];
-            $data['img_name'] = $uprt['imgname'];
-            $data['bind_person'] = $userid;
-            if(isset($re['bind_location'])){
-                $data['bind_location'] = $re['bind_location'] ;
-            }
-            //$data['bind_location'] = ? $re['bind_location'] : '';
-            $i = insert('t_tag_bind',$data);
-            if($i > 0){
-               return rtjson("资产照片上传成功，照片名称：".$uprt['imgname'],'1'); 
-            }else{
-               unlink($uprt['path'].$uprt['imgname']);
-               return rtjson("资产照片上传成功，照片登记失败，请重新上传。");
-            }
-            
-
-        }else
-        {
-            return rtjson("文件上传失败:".$uprt['msg']);
-        }
-    } 
-    /***
-    *资产绑定初始化文件上传
-    *调用地址：http://132.232.65.200:8899/asset/res/index/putAssetImgForForm
-    *单张图片通过formData方式上传。
-    *@param  token 用户身份认证码，必填。
-    *@file  图片文件,
-    *@param  asset_num 资产编号，外键。
-    *@param  imgSeq 上传照片的顺序号，标签照:1；近景:2；远景:3；位置:4。
-    *@param  asset_name 文字识别的资产名称（服务器端与当前资产做核对)。
-    *javascript调用参数组装：var formData = new FormData();
-    *                               formData.append('file', $("#uploadFile")[0].files[0]);
-    *                               formData.append('token','?????');
-    *                               formData.append('asset_num','?????');
-    *                               formData.append('imgSeq','?????');
-    *                               formData.append('asset_name','?????');
-    *                               
-    *@return     
-    * {"ID":"1","msg":"资产照片上传成功，照片名称：7CE2B683-8CB5-BD22-395D.png"}
-    */
-    public function putAssetImgForForm(){
-        $targetFolder = './Public/AssetIntiDir/';
-        if (empty($_FILES)) {
-            return rtjson('没有获取到要上传的照片.');
-        }
-
-        $re = input('post.');
-        $rule =   [
-            'token'   =>  'require',
-            'asset_num' => 'require',
-            'imgSeq'    =>  'require|number',
-            'asset_name'=> 'require'
-        ];
-        $message  =   [
-            'token.require' => '身份令牌必须提供',
-            'asset_num.require' => '资产编码必须提供',
-            'imgSeq.require' => '照片顺序号必须提供',
-            'asset_name.require' => '资产名称必须提供'
-        ];
-        $validate = new Validate($rule,$message);
-        $result = $validate->check($re);
-        if(!$result){
-            return rtjson('校验失败:'.$validate->getError());
-        }
-        //$data = gettablecols('t_checks_plan',$re);
-        $token = $re['token'];
-        $loginstatus = islogin($token);
-        if($loginstatus['ID']=="-1"){
-           return rtjson('登录超时，请重新登录.'); 
-        }
-        $userid = $loginstatus['msg'];
-        $file_name = iconv("UTF-8","gb2312", $_FILES['file']['name']); //文件名称
-        $filenames= explode(".",$file_name);
-        $tempFile = $_FILES['file']['tmp_name'];
-        $fileParts = pathinfo($_FILES['file']['name']);
-        //$rand = rand(1000, 9999);
-        $targetPath = $targetFolder; //图片存放目录
-        $ret = true;
-        if(!file_exists($targetPath)){
-            //检查是否有该文件夹，如果没有就创建，并给予最高权限
-            $ret = mkdir($targetPath, 0700,true);
-        }
-        if(!$ret) {
-          // 上传错误提示错误信息,目录创建失败
-          $res['msg'] = "创建保存图片的路径失败！";
-          return $res;
-        }
-        $newFileName = guid().'.'.$fileParts['extension'];
-        $targetFile = rtrim($targetPath,'/') . '/' .$newFileName; //图片完整路徑
-        // Validate the file type
-        $fileTypes = array('jpg', 'jpeg', 'png'); // File extensions
-        if (in_array($fileParts['extension'],$fileTypes)) {
-            move_uploaded_file($tempFile,iconv("UTF-8","gb2312", $targetFile));
-            $data['asset_num'] = $re['asset_num'];
-            $data['img_seq'] = $re['imgSeq'];
-            $data['asset_name'] = $re['asset_name'];
-            $data['img_name'] = $newFileName;
-            $data['bind_person'] = $userid;
-            $i = insert('t_tag_bind',$data);
-            if($i > 0){
-               return rtjson("资产照片上传成功，照片名称：".$newFileName,'1'); 
-            }else{
-               unlink($targetFile);
-               return rtjson("资产照片上传失败，照片登记失败，请重新上传。");
-            }
-        } else {
-            return rtjson("照片格式不合法，请上传格式为jpg、jpeg、png格式的照片.");
-        }    
-    } 
+    
     //post测试工具
     public function testpost(){
         return $this->fetch();
@@ -3570,17 +2081,7 @@ class Index extends Controller
         return $this->fetch();
     }
 
-    public function testpostimg(){
-        return $this->fetch();
-    }
-    public function tlpstr(){
-       echo  commandCreator('中国科学院物理研究所','12-12099','旋片真空泵','N08组');
-    }
-    public function rqpng($qrstr){
-       Vendor('phpqrcode.phpqrcode');
-       //include 'phpqrcode.php';
-       echo  QRcode::png($qrstr); 
-    }
+
 }
 
 

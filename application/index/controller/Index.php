@@ -3,15 +3,63 @@ namespace app\index\controller;
 use think\Controller;
 use think\Db;
 use think\Request;
+use lib\escienceoauth;
+use lib\IDPException;
 use app\index\model\corporaTexts as corporaTextsModel;
 class Index extends Controller
 {
+    //传入参数
+    public function hello($name="is null",$id=0,$num=10){
+        echo "is text.".$name." id = ".$id . " num=".$num;
+        echo "<br>";
+        echo config('kjy.OAUTH_INDEX_URI') ;
+    }
     public function index()
     {
-        return "Hello World!";
+		require_once 'config_oauth.php';
+        require_once 'class_escienceoauth.php';
+        //header("https://passport.escience.cn/oauth2/authorize?response_type=code&redirect_uri=http://172.17.0.124/api/escienceAuth/escienceAuthLogin&client_id=79427&theme=embed");
+       // echo 'hehe';
+        //请求passport登录页面
+        //echo  'good';
+        //p($_GET);
+        //$url = OAUTH_AUTHORIZE_URL.'?response_type=code&theme='.OAUTH_THEME.'&client_id='.OAUTH_CLIENT_ID.'&redirect_uri='.OAUTH_REDIRECT_URI;
+            //header("location:$url");
+            //header("location:thhp://www.baidu.com");
+        if(!isset($_GET['code'])&&!isset($_GET['act'])){
+            $url = config('kjy.OAUTH_AUTHORIZE_URL').'?response_type=code&theme='.config('kjy.OAUTH_THEME').'&client_id='.config('kjy.OAUTH_CLIENT_ID').'&redirect_uri='.config('kjy.OAUTH_REDIRECT_URI');
+            header("location:$url");
+            exit;
+            //return;
+        }
+        //退出登录
+        if($_GET['act']=='logout'){
+            //退出成功后,重定向到127.0.0.1
+            //此处理应先清除本地的Session,再重定向到通行证的退出连接
+            header("location:".config('kjy.OAUTH_LOGOUT_URL').config('kjy.OAUTH_INDEX_URI'));
+            exit;
+        }
+        echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">';
+        //回调处理逻辑
+        $provider = new EscienceOauth(array(
+                'clientId'  =>  config('kjy.OAUTH_CLIENT_ID'),
+                'clientSecret'  =>  config('kjy.OAUTH_CLIENT_SECRET'),
+                'redirectUri'   =>  config('kjy.OAUTH_REDIRECT_URI')
+        ));
+        //获得AccessToken
+        $userToken = $provider->getAccessToken('authorization_code', [
+                'code' => $_GET['code']
+        ]);
+        //用户基本信息
+        $userInfo = $userToken->userInfo;
+        //打印用户信息,这里根据应用业务逻辑,保存到session或者,找到对应邮箱的用户,放到session里面
+        var_dump($userInfo);
+        echo '<a href="?act=logout">退出登录</a>';
     }
 
-
+    public function escienceAuthLogin(){
+        echo p($_REQUEST);
+    }
     public function request(Request $rq){
         echo $rq->url();
         echo "<br>";
@@ -25,10 +73,7 @@ class Index extends Controller
         echo p(input('get.name'));
         return json(input('get.'));
     }
-    //传入参数
-    public function hello($name="is null",$id=0,$num=10){
-        echo "is text.".$name." id = ".$id . " num=".$num;
-    }
+
 
     // 访问路径：http://localhost:8899/corpora/index.php/index/index/hel
     // http://localhost:8899/corpora/index.php/index/index/hel?str=good.

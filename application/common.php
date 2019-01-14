@@ -147,13 +147,13 @@ function getDataMapsToJson($tablename,$map,$showList='*',$orderList,$page,$pages
       $list['count'] = $m->where($map)->where($map2)->count('*');
     }else{
       $list['data'] = $m->where($map)->where($map2)
-                  ->where('name|maker_name|t_assets.asset_num|person|deparment','like','%'.$keystr.'%')
+                  ->where('name|maker_name|t_assets.asset_num|zrr_name|deparment','like','%'.$keystr.'%')
                   ->field($showList)
                   ->order($orderList)
                   ->page($page,$pagesize)
                   ->select();
       $list['count'] = $m->where($map)->where($map2)
-                  ->where('name|maker_name|t_assets.asset_num|person|deparment','like','%'.$keystr.'%')
+                  ->where('name|maker_name|t_assets.asset_num|zrr_name|deparment','like','%'.$keystr.'%')
                   ->count('*');
     }    
     return json($list)  ;
@@ -990,21 +990,7 @@ function gettablecols($tname,$post){
     return $arr;
 }
 
-// function gettablecolsList($tnameArray,$post){
-//   $rtinfo = [];
-//   foreach ($tnameArray as $key => $value) {
-//     $m   =   Db::query("SHOW COLUMNS FROM `".$value."` ");
-//     //$post = array_change_key_case($post);
-//     foreach ($m as $k =>  $v) {
-//       $col = $v["Field"];
-//       //$col = strtolower($col);
-//       if(isset($post[$col])){
-//         $rtinfo[$col]=$post[$col];
-//       }
-//     }
-//   }
-//   return $rtinfo;
-// }
+
 function gettablecolslike($tname,$post){
     $arr = array();    
     $m   =   Db::query(" SHOW COLUMNS FROM `".$tname."` ");
