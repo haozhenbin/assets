@@ -152,7 +152,7 @@ class Index extends Controller
             return;
         }
         return gettable('t_assets',['asset_num'=>$id],'*');
-        //$rt = getDataToJson('assets',$data,'*','asset_
+        //$rt = getDataToJson('assets',$data,'*','asset_id',$page,$pagesize,$map2);
     }
 
     public function gtasNew($id){
@@ -164,10 +164,30 @@ class Index extends Controller
 
     public function gtas($id){
         //$id = input("get.id");
-        $ds = gettableDS('t_assets',['asset_num'=>$id],'`name` 设备名称 ,model_num 规格型号 ,`value` 设备原值 ,`tag_num` 标签号 ,rkd_num 入库单号 ,deparment 资产部门,jsr_name 经手人 ,zrr_name 责任人 ,start_time 启用日期,scgj 生产国家,scsjbxxx 生产商 ,jxsjbxxx 经销商'); 
-        $this->assign('list',$ds);
-        return $this->fetch();
+        header("location:http://159.226.186.90/asset/res/index/gtasNew/id/".$id);
+        exit;
+        // $ds = gettableDS('t_assets',['asset_num'=>$id],'`name` 设备名称 ,model_num 规格型号 ,`value` 设备原值 ,`tag_num` 标签号 ,rkd_num 入库单号 ,deparment 资产部门,jsr_name 经手人 ,zrr_name 责任人 ,start_time 启用日期,scgj 生产国家,scsjbxxx 生产商 ,jxsjbxxx 经销商'); 
+        // // $ar = array();
+        // // foreach ($ds as $key => $value) {
+        // //     $ar[] =  $value;
+        // // }
+        // $this->assign('list',$ds);
+        // //p($ds);
+        // return $this->fetch();
+
+          //   $str = '<table><tbody>';
+          // foreach($ds as $key => $vo){        
+          //   foreach ($vo as $k => $v) {
+          //     $str .=  "<tr><td>".$k."</td><td>".$v."</td></tr>";
+          //   }     
+          // }   
+          // $str .= '</tbody></table>';
+          // return $str;
+
+
     }
+
+
 
     public function getassetImgCountInfo(){
         $re = input('post.');
@@ -209,13 +229,13 @@ class Index extends Controller
                 $map2['start_time'] = ["<=",$re['maxDate']];
             }
         }
-
+		
         if(isset($re['uDate'])){
             if($re['uDate']!=''){
                 $map2['UpdateDate'] = [">",$re['uDate']];
             }
-        }        
-        $rt = getDataMapsToJson('assetsimgcount',$data,'*','asset_id',$page,$pagesize,$map2);
+        }   
+       $rt = getDataMapsToJson('assetsimgcount',$data,'*','asset_id',$page,$pagesize,$map2);
         return $rt;  
     }
 
@@ -356,6 +376,7 @@ class Index extends Controller
                 $map2['start_time'] = ["<=",$re['maxDate']];
             }
         }
+        //$rt = getDataMapsToJson('assets',$data,"`name`,tag_num,date_format(start_time,'%Y年%m月%d日') start_time,location,category,deparment,print_status,tag_type,epc,print_command,`value`,`status`,asset_num,asset_id",'asset_id',$page,$pagesize,$map2);
         $rt = getDataMapsToJson('assets',$data,"*",'asset_id',$page,$pagesize,$map2);
         return $rt;  
     }
@@ -436,7 +457,147 @@ class Index extends Controller
         return $rt;  
     }
 
-    
+    //普通用户查询资产，默认按照token的过滤责任人。
+	public function getassetlikeZRR(){
+        $re = input('post.');
+        $rule =   [
+            'token'      => 'require',
+        ];
+        $message  =   [ 
+            'token.require' => '认证令牌token必须提供', 
+        ];
+        $validate = new Validate($rule,$message);
+        $result = $validate->check($re);
+        if(!$result){
+            return rtjson('校验失败:'.$validate->getError());
+        }
+        $loginInfo = islogin($re['token']);
+        //$user = getUserfortocken($re['token']);
+        if($loginInfo['ID']=="-1"){
+            return rtjson('登录超时');
+        }
+        $userinfo = getUserfortocken($re['token']);
+        $UserName = 'hello!!!';
+        if(isset($userinfo['UserName'])){
+        	$UserName = $userinfo['UserName'];
+        }
+
+        if(isset($re['page'])){
+            $page = $re['page'] ;
+        }else{
+            $page = 0;
+        }
+        if(isset($re['pagesize'])){
+            $pagesize = $re['pagesize'] ;
+        }else{
+            $pagesize = 10;
+        }
+        //$map=[];
+        $data = gettablecols('t_assets',$re);
+        $map2 = [];
+        if(isset($re['minvalue'])){
+            if($re['minvalue']!=''){
+                $data['value'] =['>=',$re['minvalue']];
+            }
+        }
+        if(isset($re['maxvalue'])){
+            if($re['maxvalue']!=''){
+                $map2['value'] = ['<=',$re['maxvalue']];
+            }
+        }
+        if(isset($re['minDate'])){
+            if($re['minDate']!=''){
+                $data['start_time'] = [">=",$re['minDate']];
+            }
+        }
+        if(isset($re['maxDate'])){
+            if($re['maxDate']!=''){
+                $map2['start_time'] = ["<=",$re['maxDate']];
+            }
+        }
+
+        if(isset($re['maxDate'])){
+            if($re['maxDate']!=''){
+                $map2['start_time'] = ["<=",$re['maxDate']];
+            }
+        }
+
+        if(isset($re['print_status'])){
+            if($re['print_status']!=''){
+                $map2['print_status'] = ["in",rtrim($re['print_status'],",")];                
+            }
+        }
+
+		$keystr = '';
+        if(isset( $re['keystr'])){
+            $keystr = $re['keystr'];
+        }
+
+
+        
+        //$re['value']='0';
+        
+
+        foreach ($data as $key => $value) {
+            if($value==''){
+                unset($data[$key]);
+            }
+        }
+
+        if(isset($data['print_status'])){
+            unset($data['print_status']);
+        }
+        $data['zrr_name'] = $UserName;
+        $rt = getDataMapsToJson('assets',$data,'','asset_id',$page,$pagesize,$map2,$keystr);
+        
+        //$rt = gettable('t_Assets');
+        return $rt;  
+    }
+
+
+    //二级管理员可以修改资产信息，只能修改所在位置和使用人
+    public function updateAssetForAdmin(){
+    	$re = input('post.');
+        $rule =   [
+            'token'      => 'require',
+            'asset_id'      => 'require',
+        ];
+        $message  =   [ 
+            'token.require' => '认证令牌token必须提供', 
+            'asset_id.require' => '资产ID号必须提供', 
+        ];
+        $validate = new Validate($rule,$message);
+        $result = $validate->check($re);
+        if(!$result){
+            return rtjson('校验失败:'.$validate->getError());
+        }
+        $loginInfo = islogin($re['token']);
+        //$user = getUserfortocken($re['token']);
+        if($loginInfo['ID']=="-1"){
+            return rtjson('登录超时');
+        }
+        $userid = $loginInfo['msg'];
+
+        $data = [];
+        if(isset($re['location'])){
+        	$data['location'] = $re['location'];
+        }
+        if(isset($re['person'])){
+        	$data['person'] = $re['person'];
+        }
+        $i= updata('t_assets',['asset_id'=>$re['asset_id']],$data);
+        if($i>0){
+        	return rtjson('资产更新成功，资产ID号：'.$re['asset_id'],'1');
+        }else{
+        	return rtjson('资产更新失败，资产ID号：'.$re['asset_id']);
+        }
+
+
+
+
+
+    }
+
 
     // 标签绑定精确查询
     // 实现对标签绑定结果的查询，支持分页（page和pagesize参数），支持资产价值的范围查询（minvalue、maxvalue）；支持启用日期的范围查询（minDate、maxDate）
@@ -1287,7 +1448,8 @@ class Index extends Controller
 
         foreach ($printlist as $k => $v) {
                 $rows = Db::table('t_assets')->where(['asset_id' => $v['asset_id']])->find();
-                //$rows['name'] = substr(0,10, $rows['name']);                
+                //$rows['name'] = substr(0,10, $rows['name']);
+                
                 if(mb_strlen($rows['name'],"utf-8")<=12){
                     $rows['namsize'] = '15';
                 }elseif (mb_strlen($rows['name'],"utf-8")<25) {
@@ -1417,7 +1579,7 @@ class Index extends Controller
             if($v['print_rt'] == '1'){
                 $temp2 = [   'asset_id' => $v['asset_id'],
                                     'print_status' => '已打印',
-                                    'tid' => $v['tid'],
+									'tid' => $v['tid'],
                                     'tag_type' => isset($v['tag_type']) ? $v['tag_type'] : "普通RFID"
                                 ];
                 $assetsData[] = $temp2;

@@ -22,7 +22,7 @@ return [
     // 密码
     'password'        => 'kl9904',
     // 端口
-    'hostport'        => '3399',
+    'hostport'        => '8011',
     // 连接dsn
     'dsn'             => '',
     // 数据库连接参数
