@@ -1,0 +1,53 @@
+<html>
+<html>
+<html>
+<head>
+<title>资产详细信息</title>
+<style type="text/css">
+table.altrowstable {
+	font-family: verdana,arial,sans-serif;
+	font-size:11px;
+	color:#333333;
+	border-width: 1px;
+	border-color: #a9c6c9;
+	border-collapse: collapse;
+}
+table.altrowstable th {
+	border-width: 1px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #a9c6c9;
+	background-color:#c3dde0;
+}
+table.altrowstable td {
+	border-width: 1px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #a9c6c9;
+	background-color:#d4e3e5;
+}
+.oneTr > th{
+	display: none;
+}
+.oneTr .ss{
+	display: table-cell;
+	background: #29466b;
+	color: white;
+	border: 1px solid #4b7bb9;
+}
+</style>
+</head>
+<body>
+
+<table class="altrowstable">
+<tr class="oneTr"><th colspan="2" class="ss">中国科学院过程工程研究所<th></tr>
+{foreach name="list" item="vo"}
+	{foreach name="vo" item="itm"}
+		<tr><th>{$key}</th><td>{$itm}</td></tr>
+	{/foreach}
+{/foreach}
+
+</table>
+
+</body>
+</html>
