@@ -22,6 +22,8 @@ return [
     'Email_port'             =>'25',
     'Email_password'         =>'99091104soft',
     // 应用调试模式
+    'app_name'              => 'asset',
+    // 应用调试模式
     'app_debug'              => true,
     // 应用Trace
     'app_trace'              => false,

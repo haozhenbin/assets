@@ -3550,7 +3550,88 @@ class Index extends Controller
         $imageUrl['curnum'] = $curnum ;
         return json($imageUrl);
     } 
+    /***
+    *获取资产图片
+    ***/
+    public function getAssetImgToBase64(){
+        $re = input('post.');
+        $rule =   [
+            'token'   =>  'require',
+            'asset_num' => 'require'
+        ];
+        $message  =   [
+            'token.require' => '身份令牌必须提供',
+            'asset_num.require' => '资产编码必须提供'
+        ];
+        //echo $_SERVER["DOCUMENT_ROOT"].'----------';
+        //echo $_SERVER["SCRIPT_NAME"] .'--------';
+        $validate = new Validate($rule,$message);
+        $result = $validate->check($re);
+        if(!$result){
+            return rtjson('校验失败:'.$validate->getError());
+        }
+        //$data = gettablecols('t_checks_plan',$re);
+        $token = $re['token'];
+        $loginstatus = islogin($token);
+        if($loginstatus['ID']=="-1"){
+           return rtjson('登录超时，请重新登录.'); 
+        }
+        //$imgPath = 'Public/AssetIntiDir/1025422_jb.jpeg';
+        
+        //echo $checkpath ; 
+        //$base64_img = base64EncodeImage($checkpath);
+        //echo $base64_img ;
 
+        
+
+        $app = config('app_name');
+        //echo $app;
+        $imgPath = 'Public/AssetIntiDir/'.$re['asset_num'];
+        $checkpath = $_SERVER["DOCUMENT_ROOT"].DS.$app.DS.$imgPath ;
+        //echo  $checkpath ; 
+        //echo  getThumb($checkpath.'_zt.jpeg');
+
+        //$url='http://'.$_SERVER['SERVER_NAME'];//.$_SERVER["REQUEST_URI"]; 
+        //echo $url;
+        //echo './Public/AssetIntiDir/'.$re['asset_num'].'_zt.jpg';
+        //$pathHome = dirname($url);
+        
+
+        $imageUrl['img_zt'] = "";
+        $curnum = 0;
+        //echo $checkpath;
+        if(file_exists($checkpath.'_zt.jpeg')){
+            //检查是否有该文件夹，如果没有就创建，并给予最高权限
+            //"http://localhost/asset/res/index/Public/AssetIntiDir/http://localhost/asset/res/index/getAssetImggood_bq.jpg"
+            //$imageUrl['img_zt'] =  $imgPath.'_zt.jpeg';
+            $imageUrl['img_zt'] =  base64EncodeImage(getThumb($checkpath.'_zt.jpeg'));
+            $curnum++;
+        }
+        $imageUrl['img_jb'] = "";
+        //$checkpath = $_SERVER['DOCUMENT_ROOT'].'/asset/Public/AssetIntiDir/'.$re['asset_num']; 
+        //echo $checkpath ;
+        //echo $checkpath.'_jb.jpg';
+        if(file_exists($checkpath.'_jb.jpeg')){
+            //echo $checkpath.'_jb.jpg';
+            //检查是否有该文件夹，如果没有就创建，并给予最高权限
+            $imageUrl['img_jb'] =  base64EncodeImage(getThumb($checkpath.'_jb.jpeg'));
+            $curnum++;
+        }
+        $imageUrl['img_bq'] = "";
+        if(file_exists($checkpath.'_bq.jpeg')){
+            //检查是否有该文件夹，如果没有就创建，并给予最高权限
+            $imageUrl['img_bq'] =  base64EncodeImage(getThumb($checkpath.'_bq.jpeg'));;
+            $curnum++;
+        }
+        $imageUrl['img_qt'] = "";
+        if(file_exists($checkpath.'_qt.jpeg')){
+            //检查是否有该文件夹，如果没有就创建，并给予最高权限
+            $imageUrl['img_qt'] =  base64EncodeImage(getThumb($checkpath.'_qt.jpeg'));;
+            $curnum++;
+        }
+        $imageUrl['curnum'] = $curnum ;
+        return json($imageUrl);
+    } 
     /***
     *资产绑定初始化文件上传
     *调用地址：http://132.232.65.200:8899/asset/res/index/putAssetImg
@@ -3599,6 +3680,10 @@ class Index extends Controller
            return rtjson('登录超时，请重新登录.'); 
         }
         $userid = $loginstatus['msg'];
+        $rownum = getCount('t_tag_bind',['asset_num'=>$re['asset_num']]);
+        if($rownum>=4){
+            return rtjson('资产照片已上传，不能重复上传.'); 
+        }
         $uprt = base64_image_content($re['imgbase64'],'AssetIntiDir',$re['asset_num'].$re['imgSeq']);
         if($uprt['result']==1){
             //在这里插入资产数据
@@ -3610,9 +3695,14 @@ class Index extends Controller
             if(isset($re['bind_location'])){
                 $data['bind_location'] = $re['bind_location'] ;
             }
+
             //$data['bind_location'] = ? $re['bind_location'] : '';
             $i = insert('t_tag_bind',$data);
             if($i > 0){
+                $rownum = getCount('t_tag_bind',['asset_num'=>$re['asset_num']]);
+                if($rownum>=3){
+                    update('t_assets',['bind_status'=>'待审核'],['asset_num'=>$re['asset_num']]);
+                }
                return rtjson("资产照片上传成功，照片名称：".$uprt['imgname'],'1'); 
             }else{
                unlink($uprt['path'].$uprt['imgname']);
